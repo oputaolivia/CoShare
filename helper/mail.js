@@ -3,7 +3,7 @@ const handlebars = require("handlebars");
 const fs = require("fs");
 const path = require("path");
 const { template } = require("handlebars/runtime");
-const User = require("../model/userModel");
+const User = require("../models/userModel");
 require("dotenv").config();
 
 const sendMail = (userEmail, subject, payload, template)=>{

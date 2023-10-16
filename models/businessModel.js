@@ -27,8 +27,11 @@ const businessSchema = new mongoose.Schema(
     websiteUrl:{
         type: String,
     },
-    CAC: {
+    cac: {
         type: String,
+    },
+    profileImage: {
+      type: String,
     }
   },
   {

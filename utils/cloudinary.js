@@ -13,14 +13,14 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
     cloudinary,
     params: {
-        folder: 'CoShare/CAC',
+        folder: 'CoShare',
         allowedFormats: ['jpg', 'jpeg', 'png', 'pdf'],
     },
 });
 
 const upload = multer({
     storage,
-    // limits: { fileSize: 1024 * 1024 * 5 }, // 5mb max
+    limits: { fileSize: 1024 * 1024 * 5 }, // 5mb max
 });
 
 module.exports = upload;
