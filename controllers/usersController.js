@@ -59,7 +59,7 @@ const getInvestor = async (req, res) => {
 
 const getBusiness = async (req, res) => {
   try {
-    const [id] = req.params;
+    const {id} = req.params;
 
     const business = await Business.findById(id);
 
@@ -92,7 +92,9 @@ const updateInvestor = async(req,res) =>{
         const user = await User.findOne({
             _id: id
         });
-        const updatedUser = await User.findByIdAndUpdate(id, req.body );
+        const updatedUser = await User.findByIdAndUpdate(id, req.body, {
+          new: true
+        } );
 
         res.status(201).send({
             data: updatedUser,
@@ -123,7 +125,9 @@ const updateBusiness = async(req,res) =>{
         const user = await Business.findOne({
             _id: id
         });
-        const updatedBusiness = await Business.findByIdAndUpdate(id, req.body );
+        const updatedBusiness = await Business.findByIdAndUpdate(id, req.body, {
+          new: true
+        } );
 
         res.status(201).send({
             data: updatedBusiness,

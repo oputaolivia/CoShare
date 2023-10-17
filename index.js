@@ -4,6 +4,7 @@ const cors = require('cors');
 const connectDB = require('./config/db');
 
 const { userRoute } = require('./routes/userRoute');
+const { groupRoute } = require('./routes/groupRoute');
 
 const app = express();
 dotenv.config();
@@ -19,7 +20,8 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-app.use('/api', userRoute)
+app.use('/api', userRoute);
+app.use('/api/group', groupRoute)
 
 app.listen(PORT, ()=>{
     console.log(`CoShare running in ${process.env.NODE_ENV} mode on port ${PORT}`);

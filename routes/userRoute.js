@@ -6,6 +6,8 @@ const {
   registerInvestor,
   login,
   auth,
+  requestPasswordReset,
+  resetPassword,
 } = require("../utils/auth");
 const {
   getBusinesses,
@@ -19,30 +21,34 @@ const {
 
 const userRoute = express.Router();
 
-const uploadCac = [{ 
+const uploadFields = [{ 
   name: "cac", 
   maxCount: 1 
+},
+{
+  name: "profileImage",
+  maxCount: 1
 }];
-const uploadProfileImage =[{
-    name: "profileImage",
-    maxCount: 1
-}]
 
 userRoute.post("/registerInvestor", registerInvestor);
 userRoute.post(
   "/registerBusiness",
-  upload.fields(uploadCac),
+  upload.fields(uploadFields),
   registerBusiness
 );
 userRoute.post("/login", login);
 
-userRoute.get("/getInvestors", getInvestors);
-userRoute.get("/getBusinesses", getBusinesses);
-userRoute.get("/getInvestor/:id", getInvestor);
-userRoute.get("/getBusiness/:id", getBusiness);
+userRoute.get("/getInvestors", auth, getInvestors);
+userRoute.get("/getBusinesses",auth, getBusinesses);
+userRoute.get("/getInvestor/:id",auth, getInvestor);
+userRoute.get("/getBusiness/:id",auth, getBusiness);
 
-userRoute.get("/updateInvestor/:id", auth, upload.fields(uploadProfileImage), updateInvestor);
-userRoute.get("/updateBusiness", auth, upload.fields(uploadProfileImage), updateBusiness);
+userRoute.put("/updateInvestor/:id", auth, upload.fields(uploadFields), updateInvestor);
+userRoute.put("/updateBusiness/:id", auth, upload.fields(uploadFields), updateBusiness);
+userRoute.delete("/deleteUser/:id", auth, deleteUser);
+
+userRoute.post("/requestPasswordReset/:id", requestPasswordReset);
+userRoute.post("/resetPassword", resetPassword);
 
 module.exports = {
   userRoute,
