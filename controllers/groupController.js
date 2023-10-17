@@ -152,7 +152,7 @@ const joinGroup = async (req, res) => {
 
     return res.status(201).send({
       data: updateMembers,
-      message: `${userId} Joined ${group.groupName} group. This group has ${group.numMembers} members`,
+      message: `${userId} Joined ${group.groupName} group.`,
       status: 0,
     });
   } catch (err) {
@@ -290,10 +290,21 @@ const deleteGroup = async (req, res) => {
 
       
       const members = group.members;
+      //console.log(members)
       // subtract the num of groups from members
       members.forEach(groupMember => {
-        const member = User.findById(groupMember);
-        member.numGroup - 1;
+        const member = User.findById({_id:groupMember.valueOf()});
+        console.log(member)
+        const minusGroup =  member.numGroup - 1;
+        User.findByIdAndUpdate(
+          groupMember.valueOf(),
+          {
+            numGroup: minusGroup,
+          },
+          {
+            new: true,
+          }
+        );
       });
       const deletedGroup = await Group.findByIdAndDelete(id);
       return res.status(201).send({
