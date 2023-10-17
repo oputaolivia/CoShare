@@ -9,7 +9,7 @@ require("dotenv").config();
 const sendMail = (userEmail, subject, payload, template)=>{
     try{
       const transporter = nodemailer.createTransport({
-        host: "smtp.titan.email",
+        host: "gmail",
         port: 465,
         secure: true,
         auth:{

@@ -3,8 +3,8 @@ require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const User = require("../models/userModel");
 const crypto = require("crypto");
-//const { sendMail } = require("../helper/mail");
-const { Token } = require("../models/tokenModel");
+const { sendMail } = require("../helper/mail");
+const Token = require("../models/tokenModel");
 const Business = require("../models/businessModel");
 
 const secretKey = process.env.SECRET;
@@ -183,7 +183,7 @@ const auth = async (req, res, next) => {
 const requestPasswordReset = async (req, res) => {
   let { email } = req.body;
 
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email }) || await Business.findOne({email});
   if (!user) {
     res.status(401).send({
       data: {},
@@ -211,7 +211,7 @@ const requestPasswordReset = async (req, res) => {
     user.email,
     "Password Reset Request",
     { name: user.firstName, link: link },
-    "../helpers/template/requestResetPassword.handlebars"
+    "../helper/template/requestResetPassword.hbs"
   );
   res.status(200).send({
     data: {
@@ -248,7 +248,7 @@ const resetPassword = async (req, res) => {
     user.email,
     "Password Reset Successfully",
     { name: user.firstName },
-    "../helpers/template/resetPassword.handlebars"
+    "../helper/template/resetPassword.hbs"
   );
   await passwordResetToken.deleteOne();
   res.status(200).send({
