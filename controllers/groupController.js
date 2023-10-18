@@ -60,6 +60,42 @@ const createGroup = async (req, res) => {
   }
 };
 
+const getGroups = async (req,res) =>{
+  try {
+    const groups = await Group.find({});
+
+    res.status(200).send({
+      data: groups,
+      message: `All groups`,
+      status: 0,
+    })
+  } catch (err) {
+    res.status(500).send({
+      data:{},
+      error: err.message,
+      status: 1,
+    })
+  }
+};
+
+const getGroup = async(req,res) =>{
+  const {id} = req.params;
+  const group = await Group.findById(id);
+
+  if(!group)
+    return res.status(401).send({
+      data: {},
+      message: `Group doesn't exist`,
+      status:1,
+    });
+
+  res.status(200).send({
+    data: group,
+    message: `${group.groupName} group details`,
+    status: 0,
+  })
+};
+
 const updateGroup = async (req, res) => {
   try {
     const { id } = req.params;
@@ -289,8 +325,8 @@ const deleteGroup = async (req, res) => {
       });
 
       
-      const members = group.members;
-      //console.log(members)
+      const members = group.members.valueOf();
+      console.log(members)
       // subtract the num of groups from members
       members.forEach(groupMember => {
         const member = User.findById({_id:groupMember.valueOf()});
@@ -328,4 +364,6 @@ module.exports = {
   leaveGroup,
   deleteGroup,
   updateGroupImage,
+  getGroup,
+  getGroups,
 };
