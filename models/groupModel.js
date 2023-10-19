@@ -5,7 +5,7 @@ const groupSchema = new mongoose.Schema(
     ownerId: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      ref: "User",
+      ref: "Business",
     },
     groupName: {
       type: String,
@@ -20,9 +20,14 @@ const groupSchema = new mongoose.Schema(
       type: Number,
       default: 1,
     },
-    maxNumMembers:{
+    amountPerUnit:{
       type: Number,
-      default: 30,
+    },
+    units:{
+      type: Number,
+    },
+    maxUnits:{
+      type: Number,
     },
     members: [
       {
