@@ -6,6 +6,7 @@ const crypto = require("crypto");
 const { sendMail } = require("../helper/mail");
 const Token = require("../models/tokenModel");
 const Business = require("../models/businessModel");
+const Wallet = require("../models/walletModel");
 
 const secretKey = process.env.SECRET;
 
@@ -37,7 +38,7 @@ const registerInvestor = async (req, res) => {
             status: 1,
           });
         }
-        let user = new User({
+        const user = new User({
           firstName: firstName,
           lastName: lastName,
           email: email,
@@ -45,8 +46,15 @@ const registerInvestor = async (req, res) => {
           confPassword: hash,
         });
         const registedInvestor = await user.save();
+        const wallet = new Wallet({
+          userId: user._id,
+          walletNumber: user.phoneNumber.slice(1),
+          walletName: user.firstName + user.lastName,
+        });
+        const investorWallet = await wallet.save();
+        
         res.status(201).send({
-          data: registedInvestor,
+          data: `${registedInvestor}, ${investorWallet}`,
           message: "User registered successfully",
           status: 0,
         });
@@ -94,9 +102,15 @@ const registerBusiness = async (req, res) => {
           confPassword: hash,
           cac: cacUrl,
         });
-        const registeresBusiness = await business.save();
+        const registeredBusiness = await business.save();
+        const wallet = new Wallet({
+          userId: business._id,
+          walletNumber: business.phoneNumber.slice(1),
+          walletName: business.businessName,
+        });
+        const businessWallet = await wallet.save();
         res.status(201).send({
-          data: business,
+          data: `${registeredBusiness}, ${businessWallet}`,
           message: "Business registered successfully",
           status: 0,
         });

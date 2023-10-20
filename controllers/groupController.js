@@ -1,13 +1,14 @@
+const Business = require("../models/businessModel");
 const Group = require("../models/groupModel");
 const User = require("../models/userModel");
 
 const createGroup = async (req, res) => {
   try {
-    const { groupName, groupDescription } = req.body;
+    const { groupName, groupDescription, amountPerUnit, maxUnits } = req.body;
     const userId = req.user;
 
-    const user = await User.findById(userId);
-    const addGroup = user.numGroup + 1;
+    const business = await Business.findById(userId);
+    const addGroup = business.numGroup + 1;
     if (!groupName || !groupDescription)
       return res.status(400).send({
         data: {},
@@ -23,6 +24,8 @@ const createGroup = async (req, res) => {
       groupName,
       groupDescription,
       groupImage: imageUrl,
+      amountPerUnit,
+      maxUnits,
     });
     const createdGroup = await group.save();
     const updateMember = await Group.findByIdAndUpdate(
@@ -36,7 +39,7 @@ const createGroup = async (req, res) => {
         new: true,
       }
     );
-    const updateNumGroup = await User.findByIdAndUpdate(
+    const updateNumGroup = await Business.findByIdAndUpdate(
       userId,
       {
         numGroup: addGroup,
@@ -58,6 +61,42 @@ const createGroup = async (req, res) => {
       status: 1,
     });
   }
+};
+
+const getGroups = async (req, res) => {
+  try {
+    const groups = await Group.find({});
+
+    res.status(200).send({
+      data: groups,
+      message: `All groups`,
+      status: 0,
+    });
+  } catch (err) {
+    res.status(500).send({
+      data: {},
+      error: err.message,
+      status: 1,
+    });
+  }
+};
+
+const getGroup = async (req, res) => {
+  const { id } = req.params;
+  const group = await Group.findById(id);
+
+  if (!group)
+    return res.status(401).send({
+      data: {},
+      message: `Group doesn't exist`,
+      status: 1,
+    });
+
+  res.status(200).send({
+    data: group,
+    message: `${group.groupName} group details`,
+    status: 0,
+  });
 };
 
 const updateGroup = async (req, res) => {
@@ -119,10 +158,10 @@ const joinGroup = async (req, res) => {
         status: 1,
       });
 
-    if (group.numMembers == group.maxNumMembers)
+    if (group.units == group.maxUnits)
       return res.status(400).send({
         data: {},
-        message: `Can't Join, group limit reached`,
+        message: `Can't Join, Investment Units exhausted`,
       });
 
     const newGroupNum = group.numMembers + 1;
@@ -246,9 +285,13 @@ const updateGroupImage = async (req, res) => {
     const { groupImage } = req.files;
     const imageUrl = groupImage[0].path;
 
-    const updatedGroupImage = await Group.findByIdAndUpdate(id, {groupImage:imageUrl}, {
-      new: true,
-    });
+    const updatedGroupImage = await Group.findByIdAndUpdate(
+      id,
+      { groupImage: imageUrl },
+      {
+        new: true,
+      }
+    );
 
     return res.status(201).send({
       data: updatedGroupImage,
@@ -288,36 +331,32 @@ const deleteGroup = async (req, res) => {
         status: 1,
       });
 
-      
-      const members = group.members;
-      //console.log(members)
-      // subtract the num of groups from members
-      members.forEach(groupMember => {
-        const member = User.findById({_id:groupMember.valueOf()});
-        console.log(member)
-        const minusGroup =  member.numGroup - 1;
-        User.findByIdAndUpdate(
+    const members = group.members.valueOf();
+    // subtract the num of groups from members
+    for (const groupMember of members) {
+      const member = await User.findById(groupMember.valueOf());
+
+      if (member) {
+        const minusGroup = member.numGroup - 1;
+        await User.findByIdAndUpdate(
           groupMember.valueOf(),
-          {
-            numGroup: minusGroup,
-          },
-          {
-            new: true,
-          }
+          { numGroup: minusGroup },
+          { new: true }
         );
-      });
-      const deletedGroup = await Group.findByIdAndDelete(id);
-      return res.status(201).send({
-        data: {},
-        message: `Group Deleted`,
-        status:0,
-      })
+      }
+    }
+    const deletedGroup = await Group.findByIdAndDelete(id);
+    return res.status(201).send({
+      data: {},
+      message: `Group Deleted`,
+      status: 0,
+    });
   } catch (err) {
     res.status(500).send({
       data: {},
       error: err.message,
       status: 1,
-    })
+    });
   }
 };
 
@@ -328,4 +367,6 @@ module.exports = {
   leaveGroup,
   deleteGroup,
   updateGroupImage,
+  getGroup,
+  getGroups,
 };
