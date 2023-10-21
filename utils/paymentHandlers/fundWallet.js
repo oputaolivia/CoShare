@@ -1,4 +1,4 @@
-const Fund = require("../../models/fundModel");
+const Transfer = require("../../models/transferModel");
 const Wallet = require("../../models/walletModel");
 
 // Function to fund the user's wallet using MTN MoMo API
@@ -9,7 +9,7 @@ const fundWallet = async (user, amount, payeeMomoNumber) => {
     externalId: "your_external_id", // Generate a unique ID for the transaction
     payer: {
       partyIdType: "MSISDN",
-      partyId: "payer_momo_number", // Replace with the payer's MoMo number
+      partyId: user, // Replace with the payer's MoMo number
     },
     payee: {
       partyIdType: "MSISDN",

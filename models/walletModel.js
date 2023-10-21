@@ -12,7 +12,7 @@ const walletSchema = new mongoose.Schema(
       default:0,
     },
     walletNumber:{
-      type: Number,
+      type: String,
     },
     walletName:{
       type: String,

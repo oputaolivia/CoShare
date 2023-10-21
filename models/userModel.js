@@ -4,18 +4,22 @@ const userSchema = new mongoose.Schema(
   {
     firstName: {
       type: String,
+      required: true,
     },
     lastName: {
       type: String,
+      required: true,
     },
     email: {
       type: mongoose.Schema.Types.Mixed,
     },
     phoneNumber: {
       type: String,
+      required: true,
     },
     password: {
       type: mongoose.Schema.Types.Mixed,
+      required: true,
     },
     role: {
       type: String,
@@ -26,6 +30,9 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "Investor",
       enum: ["Investor", "Business"],
+    },
+    walletNumber:{
+      type: String,
     },
     referer: { type: String },
     totalRefered: {
