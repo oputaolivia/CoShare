@@ -20,6 +20,14 @@ const groupSchema = new mongoose.Schema(
       type: Number,
       default: 1,
     },
+    amount :{
+      type: Number,
+      required: true,
+    },
+    walletNumber:{
+      type: String,
+      required: true,
+    },
     amountPerUnit:{
       type: Number,
     },

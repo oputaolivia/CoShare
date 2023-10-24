@@ -11,7 +11,7 @@ const Wallet = require("../models/walletModel");
 const secretKey = process.env.SECRET;
 
 const registerInvestor = async (req, res) => {
-  let { firstName, lastName, email, confPassword, password } = req.body;
+  let { firstName, lastName, email,phoneNumber, confPassword, password } = req.body;
   const salt = await bcrypt.genSalt();
   if (password !== confPassword) {
     res.status(400).send({
@@ -41,7 +41,9 @@ const registerInvestor = async (req, res) => {
         const user = new User({
           firstName: firstName,
           lastName: lastName,
+          phoneNumber,
           email: email,
+          walletNumber: phoneNumber.slice(1),
           password: hash,
           confPassword: hash,
         });
@@ -64,7 +66,7 @@ const registerInvestor = async (req, res) => {
 };
 
 const registerBusiness = async (req, res) => {
-  let { businessName, email, confPassword, password } = req.body;
+  let { businessName, email, phoneNumber,confPassword, password } = req.body;
 
   let { cac } = req.files;
   const cacUrl = cac[0].path;
@@ -98,6 +100,8 @@ const registerBusiness = async (req, res) => {
         let business = new Business({
           businessName,
           email,
+          phoneNumber,
+          walletNumber: phoneNumber.slice(1),
           password: hash,
           confPassword: hash,
           cac: cacUrl,

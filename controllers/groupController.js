@@ -26,6 +26,7 @@ const createGroup = async (req, res) => {
       groupImage: imageUrl,
       amountPerUnit,
       maxUnits,
+      walletNumber: business.walletNumber,
     });
     const createdGroup = await group.save();
     const updateMember = await Group.findByIdAndUpdate(
