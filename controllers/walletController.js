@@ -104,7 +104,7 @@ const invest = async (req, res) => {
         status: 1,
       });
     } else {
-      const wallet = await Wallet.find(group.walletNumber)
+      const wallet = await Wallet.findOne({walletNumber: group.walletNumber})
 
       if (!wallet)
         return res.status(401).send({
@@ -115,7 +115,7 @@ const invest = async (req, res) => {
 
       const walletId = wallet._id;
       const total = wallet.walletBalance + amount;
-      const updatedWallet = await Wallet.findByIdAndUpdate(
+      const updatedGroupWallet = await Wallet.findByIdAndUpdate(
         walletId,
         { walletBalance: total },
         {
@@ -123,7 +123,7 @@ const invest = async (req, res) => {
         }
       );
       res.status(200).send({
-        data: `${updatedWallet}. ${portfolio}`,
+        data: `${updatedGroupWallet}. ${portfolio}`,
         message: `Investment made sucessfully`,
         status: 0,
       });
@@ -137,7 +137,33 @@ const invest = async (req, res) => {
   };
 };
 
+const withdraw = async(req,res) =>{
+  try {
+    
+  } catch (err) {
+    res.status(500).send({
+      data: {},
+      error: err.message,
+      status:1,
+    })
+  }
+}
+
+const groupWithdrawal = async(req, res) =>{
+  try {
+    
+  } catch (err) {
+    res.status(500).send({
+      data: {},
+      error: err.message,
+      status: 1,
+    })
+  }
+}
+
 module.exports = {
   invest,
   fundWallet,
+  withdraw,
+  groupWithdrawal,
 };
