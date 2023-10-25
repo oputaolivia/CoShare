@@ -17,7 +17,10 @@ const portfolioSchema = new mongoose.Schema({
     units:{
         type: Number,
     },
-}, {timestamps});
+},{
+    timestamps: true,
+}
+);
 
 const Portfolio = mongoose.model("portfolio", portfolioSchema);
 module.exports = Portfolio;
