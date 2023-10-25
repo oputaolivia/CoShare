@@ -1,7 +1,45 @@
-const Transfer = require("../../models/transferModel");
+const dotenv = require('dotenv');
+const {createAPIUserAndKey, TargetEnvironment, createRemittanceAPI, PartyIDVariant } = require("mtn-momo-client");
 const Wallet = require("../../models/walletModel");
 
-// Function to fund the user's wallet using MTN MoMo API
+
+dotenv.config();
+
+const subscriptionKey = process.env.SUB_KEY;
+
+const creatApi = async (req,res) =>{
+  const data = await createAPIUserAndKey({
+    providerCallbackHost: 'http://localhost',
+    subscriptionKey,
+    targetEnvironment: TargetEnvironment.Sandbox,
+  });
+
+  return res.status(201).send({
+    data,
+    message: `User created`,
+    status: 0,
+  })
+};
+
+const transfer = async(amount, payeeMomoNumber, description) =>{
+    try {
+      const { referenceId } = await remittanceAPI.transfer({
+        amount: amount,
+        currency: 'NGN',
+        externalId: '123456789',
+        payee: {
+          partyIdType: PartyIDVariant.MSISDN,
+          partyId: payeeMomoNumber,
+        },
+        payerMessage: description,
+        payeeNote: description,
+      });
+    } catch (error) {
+      console.error(error);
+    return { error: true };
+    }
+};
+
 const fundWallet = async (user, amount, payeeMomoNumber) => {
   const requestPayload = {
     amount,
@@ -40,5 +78,6 @@ const fundWallet = async (user, amount, payeeMomoNumber) => {
 }
 
 module.exports = {
-  fundWallet,
+  transfer,
+  creatApi,
 };

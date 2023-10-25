@@ -1,8 +1,9 @@
-const Transfer = require("../models/transferModel");
 const Wallet = require("../models/walletModel");
 const User = require("../models/userModel");
 const Group = require("../models/groupModel");
 const Portfolio = require("../models/portfolioModel");
+const { transfer } = require("../utils/paymentHandlers/fundWallet");
+
 
 // I need to checkout how to create an account using the momo api
 
@@ -67,7 +68,7 @@ const fundWallet = async (req, res) => {
 const invest = async (req, res) => {
   try {
     const { userId, groupId } = req.params;
-    const { amount } = req.body;
+    const { amount, description } = req.body;
 
     const group = await Group.findById(groupId);
     const user = await User.findById(userId);
@@ -87,17 +88,17 @@ const invest = async (req, res) => {
       });
     }
 
-    const fundWalletResult = await fundWallet(
-      user.walletNumber,
+    const transferResult = await transfer(
       amount,
-      group.walletNumber
+      group.walletNumber,
+      description,
     );
     const portfolio = new Portfolio({
       userId,
       amount,
       groupName: group.groupName
     });
-    if (fundWalletResult.error) {
+    if (transferResult.error) {
       return res.status(500).send({
         data: {},
         message: "Funding wallet failed",
