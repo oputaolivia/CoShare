@@ -51,12 +51,13 @@ const registerInvestor = async (req, res) => {
         const wallet = new Wallet({
           userId: user._id,
           walletNumber: user.phoneNumber.slice(1),
-          walletName: user.firstName + user.lastName,
+          walletName: `${user.firstName} + ${user.lastName}`,
         });
         const investorWallet = await wallet.save();
         
         res.status(201).send({
-          data: `${registedInvestor}, ${investorWallet}`,
+          data: `${registedInvestor}, 
+          ${investorWallet}`,
           message: "User registered successfully",
           status: 0,
         });

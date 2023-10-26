@@ -21,11 +21,24 @@ const creatApi = async (req,res) =>{
   })
 };
 
+const remittancePrimaryKey = subscriptionKey;
+let remittanceAPI
+
+const remyFunc = async () => {
+  const config = await createAPIUserAndKey({
+    providerCallbackHost: 'http://localhost',
+    subscriptionKey: remittancePrimaryKey,
+  });
+  remittanceAPI = createRemittanceAPI(config)
+}
+
+remyFunc();
+
 const transfer = async(amount, payeeMomoNumber, description) =>{
     try {
       const { referenceId } = await remittanceAPI.transfer({
         amount: amount,
-        currency: 'NGN',
+        currency: 'EUR',
         externalId: '123456789',
         payee: {
           partyIdType: PartyIDVariant.MSISDN,
@@ -34,6 +47,7 @@ const transfer = async(amount, payeeMomoNumber, description) =>{
         payerMessage: description,
         payeeNote: description,
       });
+      return referenceId;
     } catch (error) {
       console.error(error);
     return { error: true };
