@@ -93,11 +93,6 @@ const invest = async (req, res) => {
       group.walletNumber,
       description,
     );
-    const portfolio = new Portfolio({
-      userId,
-      amount,
-      groupName: group.groupName
-    });
     if (transferResult.error) {
       return res.status(500).send({
         data: {},
@@ -105,6 +100,12 @@ const invest = async (req, res) => {
         status: 1,
       });
     } else {
+      const portfolio = new Portfolio({
+        userId,
+        amount,
+        groupName: group.groupName
+      });
+      await portfolio.save();
       const wallet = await Wallet.findOne({walletNumber: group.walletNumber})
 
       if (!wallet)
@@ -123,8 +124,16 @@ const invest = async (req, res) => {
           new: true,
         }
       );
+      
+      const groupTotal = group.amount + amount;
+      const updateGroup = await Group.findByIdAndUpdate(
+        groupId, {amount: groupTotal},
+        {
+          new: true,
+        }
+      )
       res.status(200).send({
-        data: `${updatedGroupWallet}. ${portfolio}`,
+        data: `${updatedGroupWallet}, ${portfolio}, referenceId: ${transferResult}`,
         message: `Investment made sucessfully`,
         status: 0,
       });

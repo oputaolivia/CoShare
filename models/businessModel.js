@@ -34,7 +34,6 @@ const businessSchema = new mongoose.Schema(
     },
     websiteUrl:{
         type: String,
-        required: true,
     },
     cac: {
         type: String,
