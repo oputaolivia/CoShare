@@ -8,6 +8,9 @@ const portfolioSchema = new mongoose.Schema({
     userId:{
         type: String,
     },
+    groupId:{
+        type: String,
+    },
     groupName:{
         type: String,
     },

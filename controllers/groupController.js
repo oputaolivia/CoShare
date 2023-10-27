@@ -4,7 +4,7 @@ const User = require("../models/userModel");
 
 const createGroup = async (req, res) => {
   try {
-    const { groupName, groupDescription, amountPerUnit, maxUnits } = req.body;
+    const { groupName, groupDescription, amountPerUnit, maxUnits, interest, period } = req.body;
     const userId = req.user;
 
     const business = await Business.findById(userId);
@@ -26,6 +26,8 @@ const createGroup = async (req, res) => {
       groupImage: imageUrl,
       amountPerUnit,
       maxUnits,
+      interest,
+      period, // in months
       walletNumber: business.walletNumber,
     });
     const createdGroup = await group.save();
