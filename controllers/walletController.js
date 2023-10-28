@@ -124,7 +124,7 @@ const invest = async (req, res) => {
           message: `Wallet does not exist`,
           status: 1,
         });
-
+      // update groupwallet amount
       const walletId = wallet._id;
       const total = wallet.walletBalance + amount;
       const updatedGroupWallet = await Wallet.findByIdAndUpdate(
@@ -134,7 +134,7 @@ const invest = async (req, res) => {
           new: true,
         }
       );
-
+      // update group amount
       const groupTotal = group.amount + amount;
       const updateGroup = await Group.findByIdAndUpdate(
         groupId,
@@ -143,8 +143,19 @@ const invest = async (req, res) => {
           new: true,
         }
       );
+
+      // update userwallet
+      const userBalance = userWallet.walletBalance - amount;
+      const updateUserBalance = await Wallet.findByIdAndUpdate(
+        userWallet._id,
+        { walletBalance: userBalance },
+        {
+          new: true,
+        }
+      );
       res.status(200).send({
-        data: updatedGroupWallet + transferResult + portfolio,
+        data:
+          updatedGroupWallet + transferResult + updateUserBalance + portfolio,
         message: `Investment made sucessfully`,
         status: 0,
       });
@@ -202,7 +213,8 @@ const groupWithdrawal = async (req, res) => {
     for (const portfolio of portfolios) {
       if (portfolio) {
         const userInvestment = portfolio.amount;
-        const amount = (userInvestment * group.period * group.interest) / (100 * 12);
+        const amount =
+          (userInvestment * group.period * group.interest) / (100 * 12);
 
         if (groupWallet.walletBalance < amount) {
           return res.status(401).send({
@@ -251,7 +263,7 @@ const groupWithdrawal = async (req, res) => {
               }
             );
 
-            const groupTotal = group.amount + amount;
+            const groupTotal = group.amount - amount;
             const updateGroup = await Group.findByIdAndUpdate(
               groupId,
               { amount: groupTotal },
@@ -259,9 +271,20 @@ const groupWithdrawal = async (req, res) => {
                 new: true,
               }
             );
+
+            // update userwallet
+            const userWallet = await Wallet.findOne({ userId: userId });
+            const userBalance = userWallet.walletBalance + amount;
+            const updateUserBalance = await Wallet.findByIdAndUpdate(
+              userWallet._id,
+              { walletBalance: userBalance },
+              {
+                new: true,
+              }
+            );
             res.status(200).send({
-              data: updatedGroupWallet + transferResult,
-              message: `Investment made sucessfully`,
+              data: updatedGroupWallet + transferResult + updateUserBalance,
+              message: `Money transferred Successfully`,
               status: 0,
             });
           }
