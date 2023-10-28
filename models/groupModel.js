@@ -37,6 +37,12 @@ const groupSchema = new mongoose.Schema(
     maxUnits:{
       type: Number,
     },
+    interest:{
+      type: Number,
+    },
+    period:{
+      type: Number,
+    },
     members: [
       {
         type: mongoose.Schema.Types.ObjectId,

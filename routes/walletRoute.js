@@ -9,7 +9,7 @@ const { creatApi } = require("../utils/paymentHandlers/fundWallet");
 const walletRoute = express.Router();
 
 // walletRoute.post("/fundWallet/:userId/:walletId", auth, fundWallet );
-walletRoute.post("/invest/:userId/:groupId",  invest);
+walletRoute.post("/invest/:userId/:groupId",auth,  invest);
 // walletRoute.post("/withdraw", auth, withdraw);
 walletRoute.post("/createUserAndApiKey", creatApi);
 
