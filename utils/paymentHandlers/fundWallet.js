@@ -1,38 +1,35 @@
 const dotenv = require('dotenv');
-const {createAPIUserAndKey, TargetEnvironment, createRemittanceAPI, PartyIDVariant } = require("mtn-momo-client");
+const {createAPIUserAndKey, TargetEnvironment, createRemittanceAPI, PartyIDVariant, createCollectionAPI } = require("mtn-momo-client");
 const Wallet = require("../../models/walletModel");
 
 
 dotenv.config();
 
-const subscriptionKey = process.env.SUB_KEY;
-
-const creatApi = async (req,res) =>{
-  const data = await createAPIUserAndKey({
-    providerCallbackHost: 'http://localhost',
-    subscriptionKey,
-    targetEnvironment: TargetEnvironment.Sandbox,
-  });
-
-  return res.status(201).send({
-    data,
-    message: `User created`,
-    status: 0,
-  })
-};
-
-const remittancePrimaryKey = subscriptionKey;
+const remittancePrimaryKey  = process.env.REM_SUB_KEY;
 let remittanceAPI
 
 const remyFunc = async () => {
   const config = await createAPIUserAndKey({
     providerCallbackHost: 'http://localhost',
     subscriptionKey: remittancePrimaryKey,
+    targetEnvironment: TargetEnvironment.Sandbox,
   });
   remittanceAPI = createRemittanceAPI(config)
 }
 
 remyFunc();
+
+const collectionPrimaryKey = process.env.COL_SUB_KEY;
+let collectionAPI
+
+const collectionFunc = async (req,res) =>{
+  const data = await createAPIUserAndKey({
+    providerCallbackHost: 'http://localhost',
+    subscriptionKey: collectionPrimaryKey,
+    targetEnvironment: TargetEnvironment.Sandbox,
+  });
+  collectionAPI = createCollectionAPI(dotenv.config)
+};
 
 const transfer = async(amount, payeeMomoNumber, description) =>{
     try {
@@ -54,37 +51,20 @@ const transfer = async(amount, payeeMomoNumber, description) =>{
     }
 };
 
-const fundWallet = async (user, amount, payeeMomoNumber) => {
-  const requestPayload = {
-    amount,
-    currency: "NGN", // Adjust currency as needed
-    externalId: "your_external_id", // Generate a unique ID for the transaction
-    payer: {
-      partyIdType: "MSISDN",
-      partyId: user, // Replace with the payer's MoMo number
-    },
-    payee: {
-      partyIdType: "MSISDN",
-      partyId: payeeMomoNumber, // Payee's MoMo number
-    },
-  };
-
+const requestToFundWallet = async(amount, payerMoMoNumber, description) =>{
   try {
-    const response = await axios.post(
-      "https://sandbox.momodeveloper.mtn.com/collection/v1_0/requesttopay",
-      requestPayload,
-      {
-        headers: {
-          "Ocp-Apim-Subscription-Key": API_KEY,
-          "Ocp-Apim-Subscription-User": API_SECRET,
-          "X-Target-Environment": "sandbox",
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    // Handle the response, you can check the status and log it if needed
-    return { success: true };
+    const { referenceId } = await collectionAPI.requestToPay({
+      amount: amount,
+      currency: 'EUR',
+      externalId: payerMoMoNumber,
+      payer: {
+        partyIdType: PartyIDVariant.MSISDN,
+        partyId: '256779840633',
+      },
+      payerMessage: description,
+      payeeNote: description,
+    });
+    return referenceId;
   } catch (error) {
     console.error(error);
     return { error: true };
@@ -93,5 +73,5 @@ const fundWallet = async (user, amount, payeeMomoNumber) => {
 
 module.exports = {
   transfer,
-  creatApi,
+  requestToFundWallet,
 };

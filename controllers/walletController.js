@@ -2,33 +2,42 @@ const Wallet = require("../models/walletModel");
 const User = require("../models/userModel");
 const Group = require("../models/groupModel");
 const Portfolio = require("../models/portfolioModel");
-const { transfer } = require("../utils/paymentHandlers/fundWallet");
+const { transfer, requestToFundWallet } = require("../utils/paymentHandlers/fundWallet");
 
 // I need to checkout how to create an account using the momo api
 
 const fundWallet = async (req, res) => {
   try {
     const { userId, walletId } = req.params;
-    const { amount, payeeMomoNumber } = req.body;
+    const { amount, payerMomoNumber, description } = req.body;
 
     const user = await User.findById(userId);
+    const wallet = await Wallet.findById(walletId)
     if (!user) {
       return res.status(401).send({
         data: {},
         message: "User not found",
         status: 1,
       });
-    }
-    const fundWalletResult = await fundWallet(
-      user.walletNumber,
+    };
+
+    if (!wallet) {
+      return res.status(401).send({
+        data: {},
+        message: "Wallet not found",
+        status: 1,
+      });
+    };
+    const fundWalletResult = await requestToFundWallet(
       amount,
-      payeeMomoNumber
+      payerMomoNumber,
+      description,
     );
 
     if (fundWalletResult.error) {
       return res.status(500).send({
         data: {},
-        message: "Funding wallet failed",
+        message: "Request to Fund wallet failed",
         status: 1,
       });
     } else {
