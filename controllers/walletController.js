@@ -2,24 +2,28 @@ const Wallet = require("../models/walletModel");
 const User = require("../models/userModel");
 const Group = require("../models/groupModel");
 const Portfolio = require("../models/portfolioModel");
-const { transfer, requestToFundWallet } = require("../utils/paymentHandlers/fundWallet");
+const {
+  transfer,
+  requestToFundWallet,
+  requestPaymentStatus,
+} = require("../utils/paymentHandlers/fundWallet");
 
 // I need to checkout how to create an account using the momo api
 
-const fundWallet = async (req, res) => {
+const requestFundWallet = async (req, res) => {
   try {
     const { userId, walletId } = req.params;
     const { amount, payerMomoNumber, description } = req.body;
 
     const user = await User.findById(userId);
-    const wallet = await Wallet.findById(walletId)
+    const wallet = await Wallet.findById(walletId);
     if (!user) {
       return res.status(401).send({
         data: {},
         message: "User not found",
         status: 1,
       });
-    };
+    }
 
     if (!wallet) {
       return res.status(401).send({
@@ -27,11 +31,11 @@ const fundWallet = async (req, res) => {
         message: "Wallet not found",
         status: 1,
       });
-    };
+    }
     const fundWalletResult = await requestToFundWallet(
       amount,
       payerMomoNumber,
-      description,
+      description
     );
 
     if (fundWalletResult.error) {
@@ -50,17 +54,9 @@ const fundWallet = async (req, res) => {
           status: 1,
         });
 
-      const total = wallet.walletBalance + amount;
-      const updatedWallet = await Wallet.findByIdAndUpdate(
-        walletId,
-        { walletBalance: total },
-        {
-          new: true,
-        }
-      );
       res.status(200).send({
-        data: `${updatedWallet}`,
-        message: `Wallet Funded`,
+        data: fundWalletResult,
+        message: `Request to fund wallet sent`,
         status: 0,
       });
     }
@@ -73,6 +69,60 @@ const fundWallet = async (req, res) => {
   }
 };
 
+const acceptFunds = async (req, res) => {
+  try {
+    const { userId, walletId } = req.params;
+    const { referenceId } = req.body;
+
+    const user = await User.findById(userId);
+    const wallet = await Wallet.findById(walletId);
+    if (!user) {
+      return res.status(401).send({
+        data: {},
+        message: "User not found",
+        status: 1,
+      });
+    }
+
+    if (!wallet) {
+      return res.status(401).send({
+        data: {},
+        message: "Wallet not found",
+        status: 1,
+      });
+    }
+
+    const paymentStatus = requestPaymentStatus(referenceId);
+
+    if (paymentStatus.error) {
+      return res.status(500).send({
+        data: {},
+        message: "Not found",
+        status: 1,
+      });
+    } else if (paymentStatus.status) {
+      const total = wallet.walletBalance + amount;
+      const updatedWallet = await Wallet.findByIdAndUpdate(
+        walletId,
+        { walletBalance: total },
+        {
+          new: true,
+        }
+      );
+      res.status(200).send({
+        data: updatedWallet,
+        message: `Wallet Funded`,
+        status: 0,
+      });
+    }
+  } catch (err) {
+    res.status(500).send({
+      data: {},
+      error: err.message,
+      status: 1,
+    });
+  }
+};
 const invest = async (req, res) => {
   try {
     const { userId, groupId } = req.params;
@@ -180,6 +230,64 @@ const invest = async (req, res) => {
 
 const withdraw = async (req, res) => {
   try {
+    const { userId, walletId } = req.params;
+    const { amount, payeeMomoNumber, description } = req.body;
+
+    const user = await User.findById(userId);
+    const wallet = await Wallet.findById(walletId);
+    if (!user) {
+      return res.status(401).send({
+        data: {},
+        message: "User not found",
+        status: 1,
+      });
+    }
+
+    if (!wallet) {
+      return res.status(401).send({
+        data: {},
+        message: "Wallet not found",
+        status: 1,
+      });
+    }
+
+    if (userWallet.walletBalance < amount) {
+      return res.status(401).send({
+        data: {},
+        message: `Insufficient funds`,
+        status: 1,
+      });
+    }
+
+    const transferResult = await transfer(amount, payeeMomoNumber, description);
+    if (transferResult.error) {
+      return res.status(500).send({
+        data: {},
+        message: "Funding wallet failed",
+        status: 1,
+      });
+    } else {
+      const portfolio = new Portfolio({
+        userId,
+        amount,
+      });
+      await portfolio.save();
+
+      // update user wallet amount
+      const total = wallet.walletBalance - amount;
+      const updatedUserWallet = await Wallet.findByIdAndUpdate(
+        walletId,
+        { walletBalance: total },
+        {
+          new: true,
+        }
+      );
+      res.status(201).send({
+        data: updatedUserWallet,
+        message: `Money withdrawn`,
+        status: 0,
+      })
+    };
   } catch (err) {
     res.status(500).send({
       data: {},
@@ -311,7 +419,8 @@ const groupWithdrawal = async (req, res) => {
 
 module.exports = {
   invest,
-  fundWallet,
+  requestFundWallet,
   withdraw,
   groupWithdrawal,
+  acceptFunds,
 };
