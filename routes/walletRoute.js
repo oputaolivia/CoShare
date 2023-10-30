@@ -1,17 +1,19 @@
 const express = require("express");
 const {
-  fundWallet,
   invest,
+  requestFundWallet,
+  acceptFunds,
   withdraw,
+  groupWithdrawal,
 } = require("../controllers/walletController");
 const {auth} = require("../utils/auth.js");
-const { creatApi } = require("../utils/paymentHandlers/fundWallet");
 const walletRoute = express.Router();
 
-// walletRoute.post("/fundWallet/:userId/:walletId", auth, fundWallet );
+walletRoute.post("/fundWallet/:userId/:walletId", auth, requestFundWallet );
 walletRoute.post("/invest/:userId/:groupId",auth,  invest);
-// walletRoute.post("/withdraw", auth, withdraw);
-walletRoute.post("/createUserAndApiKey", creatApi);
+walletRoute.post("/withdraw", auth, withdraw);
+walletRoute.post("/groupWithdrawal/:userId/:groupId", auth, groupWithdrawal);
+walletRoute.post("/acceptFunds/:userId/:walletId", auth, acceptFunds);
 
 module.exports ={
     walletRoute,
